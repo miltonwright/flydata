@@ -76,7 +76,7 @@ public class App {
 
             httpResponse.setContentType("text/plain");
             try (PrintWriter out = new PrintWriter(httpResponse.getOutputStream())) {
-                ZonedDateTime midnight = LocalDate.now(clock).atStartOfDay(TIME_ZONE_NORWAY);
+                ZonedDateTime midnight = LocalDate.now(clock).atStartOfDay(TIME_ZONE_NORWAY).minusDays(Long.getLong("com.github.miltonwright.fly.daysAgo", 1) - 1);
                 for (Flight f : flightCache.getUnchecked("")) {
                     if (!f.scheduleTime.isBefore(midnight.minusDays(1).toInstant()) && f.scheduleTime.isBefore(midnight.toInstant())) {
                         out.println(Joiner.on("\t").join(ImmutableList.of(f.flightId, f.airline, f.domInt, f.scheduleTime, f.airport, MoreObjects.firstNonNull(f.gate, ""), f.getStatusString())));
