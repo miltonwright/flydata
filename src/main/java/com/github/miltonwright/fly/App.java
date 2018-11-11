@@ -3,6 +3,7 @@ package com.github.miltonwright.fly;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -47,7 +48,14 @@ public class App {
     private static final CacheLoader<String, List<Flight>> FLIGHT_LOADER = new CacheLoader<String, List<Flight>>() {
         @Override
         public List<Flight> load(String arg) throws Exception {
-            return ImmutableList.of();
+            /**
+             * See documentation on
+             * https://avinor.no/konsern/tjenester/flydata/flydata-i-xml-format
+             *
+             * No matter how I adjust TimeFrom or TimeTo, I have not been able to get
+             * any data that is older than a couple of days from this service.
+             */
+            return unXml(new URL("https://flydata.avinor.no/XmlFeed.asp?TimeFrom=48&TimeTo=7&airport=OSL&direction=D").openStream());
         }
     };
 
