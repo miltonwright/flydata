@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<airport xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://flydata.avinor.no/XmlFeed.xsd"
+         name="OSL">
+  <flights lastUpdate="2018-11-10T09:55:16Z">
+    <flight uniqueID="8046613">
+      <airline>6B</airline>
+      <flight_id>6B605</flight_id>
+      <dom_int>S</dom_int>
+      <schedule_time>2018-11-04T07:50:00Z</schedule_time>
+      <arr_dep>D</arr_dep>
+      <airport>TFS</airport>
+      <check_in>10</check_in>
+    </flight>
+    <flight uniqueID="8054370">
+      <airline>AY</airline>
+      <flight_id>AY2681</flight_id>
+      <dom_int>D</dom_int>
+      <schedule_time>2018-11-08T21:25:00Z</schedule_time>
+      <arr_dep>D</arr_dep>
+      <airport>HOV</airport>
+      <check_in>5 6</check_in>
+      <gate>A26</gate>
+      <status code="D" time="2018-11-08T21:29:00Z"/>
+    </flight>
+    <flight uniqueID="8054384">
+      <airline>FI</airline>
+      <flight_id>FI7202</flight_id>
+      <dom_int>I</dom_int>
+      <schedule_time>2018-11-08T22:40:00Z</schedule_time>
+      <arr_dep>D</arr_dep>
+      <airport>SVO</airport>
+      <check_in>7</check_in>
+      <gate>F16</gate>
+      <status code="D" time="2018-11-08T22:31:00Z"/>
+    </flight>
+  </flights>
+</airport>
