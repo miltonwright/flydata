@@ -3,6 +3,7 @@ package com.github.miltonwright.fly;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.time.Clock;
 import java.time.Duration;
@@ -40,6 +41,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 public class App {
 
@@ -59,6 +66,12 @@ public class App {
         }
     };
 
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Instant.class, new JsonSerializer<Instant>() {
+        @Override
+        public JsonElement serialize(Instant instant, Type arg1, JsonSerializationContext arg2) {
+            return new JsonPrimitive(instant.toString());
+        }}).create();
+
     private static class Handler extends AbstractHandler {
         private final LoadingCache<String, List<Flight>> flightCache;
         private final Clock clock;
@@ -74,11 +87,17 @@ public class App {
                 return;
             }
 
-            httpResponse.setContentType("text/plain");
+            boolean isJson = "json".equals(request.getParameter("format"));
+            httpResponse.setContentType(isJson ? "application/json" : "text/plain");
+            ZonedDateTime midnight = LocalDate.now(clock).atStartOfDay(TIME_ZONE_NORWAY).minusDays(Long.getLong("com.github.miltonwright.fly.daysAgo", 1) - 1);
+            List<Flight> flights = flightCache.getUnchecked("").stream()
+                .filter(f -> !f.scheduleTime.isBefore(midnight.minusDays(1).toInstant()) && f.scheduleTime.isBefore(midnight.toInstant()))
+                .collect(Collectors.toList());
             try (PrintWriter out = new PrintWriter(httpResponse.getOutputStream())) {
-                ZonedDateTime midnight = LocalDate.now(clock).atStartOfDay(TIME_ZONE_NORWAY).minusDays(Long.getLong("com.github.miltonwright.fly.daysAgo", 1) - 1);
-                for (Flight f : flightCache.getUnchecked("")) {
-                    if (!f.scheduleTime.isBefore(midnight.minusDays(1).toInstant()) && f.scheduleTime.isBefore(midnight.toInstant())) {
+                if (isJson) {
+                    out.print(GSON.toJson(flights));
+                } else {
+                    for (Flight f : flights) {
                         out.println(Joiner.on("\t").join(ImmutableList.of(f.flightId, f.airline, f.domInt, f.scheduleTime, f.airport, MoreObjects.firstNonNull(f.gate, ""), f.getStatusString())));
                     }
                 }

@@ -33,6 +33,13 @@ public class AppTest extends TestCase {
         assertEquals("text/plain", connection.getHeaderField("Content-Type"));
         String response = CharStreams.toString(new InputStreamReader(connection.getInputStream(), Charsets.UTF_8));
         assertTrue(response, response.contains("AY2681\tAY\tD\t2018-11-08T21:25:00Z\tHOV\tA26\tDeparted at 22:29:00"));
+
+        connection = new URL(server.getURI().toString() + "flyavganger?format=json").openConnection();
+        connection.connect();
+        assertEquals("application/json", connection.getHeaderField("Content-Type"));
+        response = CharStreams.toString(new InputStreamReader(connection.getInputStream(), Charsets.UTF_8));
+        assertTrue(response, response.contains("{\"flightId\":\"AY2681\",\"airline\":\"AY\",\"domInt\":\"D\",\"scheduleTime\":\"2018-11-08T21:25:00Z\",\"airport\":\"HOV\",\"gate\":\"A26\",\"statusCode\":\"D\",\"statusTime\":\"2018-11-08T21:29:00Z\"}"));
+
         server.stop();
     }
 }
