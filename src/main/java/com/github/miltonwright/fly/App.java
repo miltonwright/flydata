@@ -55,7 +55,7 @@ public class App {
              * No matter how I adjust TimeFrom or TimeTo, I have not been able to get
              * any data that is older than a couple of days from this service.
              */
-            return unXml(new URL("https://flydata.avinor.no/XmlFeed.asp?TimeFrom=48&TimeTo=7&airport=OSL&direction=D").openStream());
+            return unXml(new URL("https://flydata.avinor.no/XmlFeed.asp?TimeFrom=48&TimeTo=7&airport=" + System.getProperty("com.github.miltonwright.fly.aiport", "OSL") + "&direction=D").openStream());
         }
     };
 
