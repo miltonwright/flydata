@@ -1,0 +1,8 @@
+# Eclipse project files
+target
+.checkstyle
+.metadata
+.recommenders
+.classpath
+.project
+.settings
