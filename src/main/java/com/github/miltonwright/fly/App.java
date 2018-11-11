@@ -3,9 +3,12 @@ package com.github.miltonwright.fly;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,9 +53,11 @@ public class App {
 
     private static class Handler extends AbstractHandler {
         private final LoadingCache<String, List<Flight>> flightCache;
+        private final Clock clock;
 
-        private Handler(CacheLoader<String, List<Flight>> cacheLoader) {
+        private Handler(Clock clock, CacheLoader<String, List<Flight>> cacheLoader) {
             flightCache =  CacheBuilder.newBuilder().refreshAfterWrite(Duration.ofMinutes(3)).build(cacheLoader);
+            this.clock = clock;
         }
 
         @Override
@@ -63,8 +68,11 @@ public class App {
 
             httpResponse.setContentType("text/plain");
             try (PrintWriter out = new PrintWriter(httpResponse.getOutputStream())) {
+                ZonedDateTime midnight = LocalDate.now(clock).atStartOfDay(TIME_ZONE_NORWAY);
                 for (Flight f : flightCache.getUnchecked("")) {
-                    out.println(Joiner.on("\t").join(ImmutableList.of(f.flightId, f.airline, f.domInt, f.scheduleTime, f.airport, MoreObjects.firstNonNull(f.gate, ""), f.getStatusString())));
+                    if (!f.scheduleTime.isBefore(midnight.minusDays(1).toInstant()) && f.scheduleTime.isBefore(midnight.toInstant())) {
+                        out.println(Joiner.on("\t").join(ImmutableList.of(f.flightId, f.airline, f.domInt, f.scheduleTime, f.airport, MoreObjects.firstNonNull(f.gate, ""), f.getStatusString())));
+                    }
                 }
             } finally {
                 request.setHandled(true);
@@ -144,15 +152,15 @@ public class App {
         return result.stream().map(s -> new Flight(s)).collect(Collectors.toList());
     }
 
-    public static Server createServer(int port, CacheLoader<String, List<Flight>> cacheLoader) throws Exception {
+    public static Server createServer(int port, Clock clock, CacheLoader<String, List<Flight>> cacheLoader) throws Exception {
         Server server = new Server(port);
-        server.setHandler(new Handler(cacheLoader));
+        server.setHandler(new Handler(clock, cacheLoader));
         server.start();
         return server;
     }
 
     public static void main(String[] args) throws Exception {
-        Server server = createServer(Integer.getInteger("com.github.miltonwright.fly.port", 8080), FLIGHT_LOADER);
+        Server server = createServer(Integer.getInteger("com.github.miltonwright.fly.port", 8080), Clock.systemUTC(), FLIGHT_LOADER);
         server.join();
     }
 }

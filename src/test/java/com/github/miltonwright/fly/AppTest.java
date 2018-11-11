@@ -3,6 +3,9 @@ package com.github.miltonwright.fly;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.eclipse.jetty.server.Server;
@@ -24,7 +27,7 @@ public class AppTest extends TestCase {
     };
 
     public void testApp() throws Exception {
-        Server server = App.createServer(0, FLIGHT_LOADER);
+        Server server = App.createServer(0, Clock.fixed(Instant.parse("2018-11-09T21:30:00Z"), ZoneId.of("Europe/Oslo")), FLIGHT_LOADER);
         URLConnection connection = new URL(server.getURI() + "flyavganger").openConnection();
         connection.connect();
         assertEquals("text/plain", connection.getHeaderField("Content-Type"));
